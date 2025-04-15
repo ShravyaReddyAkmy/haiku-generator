@@ -9,8 +9,12 @@ https://haiku-generator-aifund.vercel.app/
 ## Local Setup
 
 ### Step-1: Clone the repository
+```
 git clone https://github.com/ShravyaReddyAkmy/haiku-generator.git
+```
+```
 cd haiku-generator
+```
 
 ### Step-2: Make installations:
 ```
