@@ -5,7 +5,7 @@ import admin from 'firebase-admin';
 // const serviceAccountPath = './serviceAccountKey.json';
 
 if (!admin.apps.length) {
-  // const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+//   const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
   const serviceAccount = {
     type: process.env.FB_TYPE,
     project_id: process.env.FB_PROJECT_ID,
