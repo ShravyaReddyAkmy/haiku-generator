@@ -1,5 +1,5 @@
 # Haiku Generator
-![App Screenshot](./screenshot.png)
+![App Screenshot](./Screenshot.png)
 
 Web App to generate "Haiku - Japanese Style Poem" based on user input.
 
