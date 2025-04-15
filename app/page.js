@@ -1,95 +1,113 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useState, useEffect } from 'react';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [keywords, setKeywords] = useState('');
+  const [haiku, setHaiku] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [pastHaikus, setPastHaikus] = useState([]);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const fetchHaikus = async () => {
+    const res = await fetch('/api/get-haiku');
+    const data = await res.json();
+    setPastHaikus(data.haikus || []);
+  };
+
+  const generateHaiku = async () => {
+    setLoading(true);
+    setHaiku('');
+
+    const res = await fetch('/api/haiku', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keywords }),
+    });
+
+    const data = await res.json();
+    setHaiku(data.haiku);
+
+    await fetch('/api/save-haiku', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ haiku: data.haiku, keywords }),
+    });
+
+    await fetchHaikus();
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchHaikus();
+  }, []);
+
+  return (
+    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>Haiku Generator 🌸</h1>
+
+      <input
+        type="text"
+        placeholder="Enter keywords (e.g., rain, silence)"
+        value={keywords}
+        onChange={(e) => setKeywords(e.target.value)}
+        style={{
+          padding: '0.5rem',
+          width: '100%',
+          fontSize: '1rem',
+          marginBottom: '1rem',
+        }}
+      />
+      <button
+        onClick={generateHaiku}
+        disabled={loading}
+        style={{
+          padding: '0.5rem 1rem',
+          fontSize: '1rem',
+          backgroundColor: '#0070f3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+        }}
+      >
+        {loading ? 'Generating...' : 'Generate Haiku'}
+      </button>
+
+      {haiku && (
+        <pre
+          style={{
+            whiteSpace: 'pre-wrap',
+            marginTop: '2rem',
+            backgroundColor: '#f0f0f0',
+            padding: '1rem',
+            borderRadius: '5px',
+          }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {haiku}
+        </pre>
+      )}
+
+      {pastHaikus.length > 0 && (
+        <section style={{ marginTop: '3rem' }}>
+          <h2>Past Haikus</h2>
+          {pastHaikus
+            .filter((item) => item.haiku !== haiku) // 👈 Filter out current haiku
+            .map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '1rem',
+                  backgroundColor: '#fafafa',
+                  borderRadius: '4px',
+                  borderLeft: '4px solid #ccc',
+                }}
+              >
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{item.haiku}</pre>
+                <small style={{ color: '#777' }}>User Keywords: {item.keywords}</small>
+              </div>
+            ))}
+        </section>
+      )}
+    </main>
   );
 }
